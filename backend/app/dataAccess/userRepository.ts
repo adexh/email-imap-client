@@ -10,7 +10,7 @@ export class UserRepository {
 
   public async findByEmail(email: string): Promise<User | null> {
     const [userFromDb] = await db.select({ email:users.email, password:users.password, name:users.name}).from(users).where(eq(users.email, email));
-    return userFromDb ? {email: userFromDb.email, name: userFromDb.name} : null;
+    return userFromDb ? {email: userFromDb.email, name: userFromDb.name, password: userFromDb.password} : null;
   }
 
   async save(user: UserParams): Promise<void> {

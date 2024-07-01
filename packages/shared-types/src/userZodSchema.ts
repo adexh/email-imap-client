@@ -6,4 +6,10 @@ export const userSchema = z.object({
     email: z.string().email(),
 });
 
+export const loginSchema = z.object({
+    password: z.string(),
+    email: z.string().email()
+})
+
 export type UserParams = z.infer<typeof userSchema>;
+export type LoginParams = z.infer<typeof loginSchema>;

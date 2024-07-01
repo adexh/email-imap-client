@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import axios from "axios"
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -24,41 +25,36 @@ import {
 
 // import { userSchema } from "shared-types"
 
-// const FormSchema = userSchema;
 const FormSchema = z.object({
   password: z.string().min(6, 'Must be min 6 characters').max(50)
-  .regex(/(?=.*[a-z])/, 'Atleast one lower case')
-  .regex(/(?=.*[A-Z])/, 'Atleast one upper case')
-  .regex(/(?=.*\d)/, 'Atleast one digit')
-  .regex(/^\S*$/, 'No Spaces!'),
+    .regex(/(?=.*[a-z])/, 'Atleast one lower case')
+    .regex(/(?=.*[A-Z])/, 'Atleast one upper case')
+    .regex(/(?=.*\d)/, 'Atleast one digit')
+    .regex(/^\S*$/, 'No Spaces!'),
   email: z.string().email(),
 });
 
 export default function InputForm() {
+  const navigate = useNavigate();
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   })
 
-function onSubmit(data: z.infer<typeof FormSchema>) {
-    axios.post('http://localhost:5000/api/v1/user/login', data).then(res => {
-        if( res.status == 201 ) {
-            toast({
-                title: "Account created"
-            })
-        } else {
-            toast({
-                title: "Some issue"
-            })
-        }
-    }).catch(err=> {
-        toast({
-            
-            title:"There is some error",
-            description: (
-                <pre><code>{err.message}</code></pre>
-            ),
-            variant: "destructive"
-        })
+  function onSubmit(data: z.infer<typeof FormSchema>) {
+
+    axios.post('http://localhost:5000/api/v1/user/login', data).then(() => {
+
+      return navigate("/");
+    }).catch(err => {
+      toast({
+
+        title: "There is some error",
+        description: (
+          <pre><code>{err.message}</code></pre>
+        ),
+        variant: "destructive"
+      })
     })
   }
 
@@ -79,8 +75,8 @@ function onSubmit(data: z.infer<typeof FormSchema>) {
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input
-                      className="w-full"
-                      placeholder="shadcn" {...field} />
+                        className="w-full"
+                        placeholder="shadcn" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -94,9 +90,9 @@ function onSubmit(data: z.infer<typeof FormSchema>) {
                     <FormLabel>Password</FormLabel>
                     <FormControl>
                       <Input
-                      className="w-full"
-                      type="password"
-                      placeholder="shadcn" {...field} />
+                        className="w-full"
+                        type="password"
+                        placeholder="shadcn" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -105,7 +101,7 @@ function onSubmit(data: z.infer<typeof FormSchema>) {
               <Button type="submit">Submit</Button>
             </form>
           </Form>
-          <div className="py-2 text-gray-500">Don't have an account ? <a  href='/register' className="underline underline-offset-2 hover:text-black">click here</a></div>
+          <div className="py-2 text-gray-500">Don't have an account ? <a href='/register' className="underline underline-offset-2 hover:text-black">click here</a></div>
         </CardContent>
       </Card>
     </div>

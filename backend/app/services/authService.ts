@@ -1,4 +1,4 @@
-import { User, userSchema } from 'shared-types';
+import { User, loginSchema } from 'shared-types';
 import { UserRepository } from '../dataAccess/userRepository';
 import bcrypt from 'bcryptjs';
 
@@ -6,7 +6,7 @@ export class LoginService {
     constructor(private userRepository: UserRepository) { }
 
     async login(userData: any): Promise<User | null> {
-        const result = userSchema.safeParse(userData);
+        const result = loginSchema.safeParse(userData);
 
         if (!result.success) {
             throw new Error(result.error.message);

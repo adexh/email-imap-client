@@ -17,9 +17,9 @@ const authController = new AuthController(loginService);
 const user = Router();
 
 user.post('/login', authController.login);
-user.get('/register', userController.register);
+user.post('/register', userController.register);
 
-user.use(authenticate);
+// user.use(authenticate);
 
 user.get('/info', userController.userInfo);
 

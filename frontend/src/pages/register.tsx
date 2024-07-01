@@ -21,6 +21,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
+import axios from "axios"
+
 // import { userSchema } from "shared-types"
 
 // const FormSchema = userSchema;
@@ -40,13 +42,32 @@ export default function InputForm() {
   })
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
+    axios.post('http://localhost:5000/api/v1/user/register', data).then(res => {
+        if( res.status == 201 ) {
+            toast({
+                title: "Account created"
+            })
+        } else {
+            toast({
+                title: "Some issue"
+            })
+        }
+    }).catch(err=> {
+        if ( err.response?.status == 409) {
+            toast({
+                title:"Email already in use",
+                variant: "destructive"
+            })
+        } else {
+            toast({
+            
+                title:"There is some error",
+                description: (
+                    <pre><code>{err.message}</code></pre>
+                ),
+                variant: "destructive"
+            })
+        }
     })
   }
 
