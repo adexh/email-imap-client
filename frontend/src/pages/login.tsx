@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import axios from "axios"
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "@/context/authContext";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -22,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { useContext } from "react";
 
 // import { userSchema } from "shared-types"
 
@@ -36,19 +38,27 @@ const FormSchema = z.object({
 
 export default function InputForm() {
   const navigate = useNavigate();
+  const { setAuthenticated, setLoading } = useContext(AuthContext);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   })
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
+    setLoading(true);
 
-    axios.post('http://localhost:5000/api/v1/user/login', data).then(() => {
-
-      return navigate("/");
-    }).catch(err => {
+    axios.post('http://localhost:5000/api/v1/user/login', data, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true
+    }).then(() => {
+      setAuthenticated(true);
+      setLoading(false);
+      return navigate("/", { replace: true });
+    }).catch(err => { 
+      setAuthenticated(false);
       toast({
-
         title: "There is some error",
         description: (
           <pre><code>{err.message}</code></pre>

@@ -1,36 +1,29 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import useLocalStorageLoginCheck from '../helpers/hooks/useLocalStorageLoginCheck';
-import { useLocation } from 'react-router';
-import { useRecoilValue } from 'recoil';
-import { userState } from '../store/atoms/userState';
+import React, { useContext } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { AuthContext } from '@/context/authContext';
 
-type PrivateRouteProps = {
-  component: React.ComponentType;
-  isAdmin?: boolean;
-};
+const ProtectedRoute: React.FC = () => {
+  const { authenticated, loading } = useContext(AuthContext);
 
-const PrivateRoute: React.FC<PrivateRouteProps> = ({ component: RouteComponent, isAdmin }) => {
-  const isLoggedIn = useLocalStorageLoginCheck();
-  const user = useRecoilValue(userState);
+  const location = useLocation().pathname;
+  console.log("Auth protected Route : ",authenticated);
 
-  const location = useLocation();
-
-  if (isLoggedIn) {
-    return location.pathname === '/login' ||
-      location.pathname === '/register' ||
-      (isAdmin && !user.isAdmin) ? (
-      <Navigate to='/' />
-    ) : (
-      <RouteComponent />
-    );
+  if( loading ) {
+    console.log("Is loading");
+    
+    return <Outlet/>
+  }
+  
+  if( authenticated && (location === '/login' || location === '/register' ) ) {
+    console.log("Auth and path  ", location);
+    return <Navigate to='/' />;
   }
 
-  return location.pathname === '/login' || location.pathname === '/register' ? (
-    <RouteComponent />
-  ) : (
-    <Navigate to='/' />
-  );
+  if( !authenticated && location !== '/login' && location !== '/register' ) {
+    return <Navigate to="/login" state={{ from: location }}/>;
+  }
+
+  return <Outlet/>
 };
 
-export default PrivateRoute;
+export default ProtectedRoute;

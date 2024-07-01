@@ -19,7 +19,10 @@ const user = Router();
 user.post('/login', authController.login);
 user.post('/register', userController.register);
 
-// user.use(authenticate);
+user.use(authenticate);
+user.get('/session',(req, res) => {
+    return res.status(200).send();
+})
 
 user.get('/info', userController.userInfo);
 
