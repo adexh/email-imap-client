@@ -1,0 +1,26 @@
+{
+    "files": [],
+    "references": [
+      { "path": "./backend" },
+      { "path": "./frontend" },
+      { "path": "./packages/shared-types" }
+    ],
+    "compilerOptions": {
+      "rootDir": ".",
+      "composite": true,
+      "baseUrl": ".",
+      "paths": {
+        "shared-types": ["packages/shared-types/*"]
+      },
+      "outDir": "./dist",
+      "moduleResolution": "node",
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "strict": true,
+      "target": "esnext",
+      "lib": ["esnext", "dom"],
+      "typeRoots": ["node_modules/@types", "types"],
+      "types": []
+    }
+  }

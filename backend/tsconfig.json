@@ -1,0 +1,16 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+      "outDir": "./dist",
+      "module": "CommonJS",
+      "target": "ES2018",
+      "lib": ["ESNext"],
+      "moduleResolution": "Node",
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+      "paths": {
+        "shared-types/*": ["../packages/shared-types/*"]
+      }
+    },
+    "include": ["./**/*.ts", "../packages/shared-types/././**/*.ts"] 
+}
