@@ -9,6 +9,7 @@ export class AuthController {
             const user = await this.loginService.login(req.body);
             if( user ) {
                 req.session.user = {
+                    id: user.id,
                     name: user.name,
                     email: user.email,
                 }

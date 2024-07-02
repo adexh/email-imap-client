@@ -35,4 +35,13 @@ export class UserService {
         }
         return user;
     }
+    
+    async accessToken(email: string): Promise<string> {
+        const token = await this.userRepository.getAccessToken(email);
+        if( token )
+            return token;
+        else
+            throw new Error('Issue in getting access token');
+    }
+
 }

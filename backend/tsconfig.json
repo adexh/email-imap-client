@@ -12,5 +12,5 @@
         "shared-types/*": ["../packages/shared-types/*"]
       }
     },
-    "include": ["./**/*.ts", "../packages/shared-types/././**/*.ts"] 
+    "include": ["./**/*.ts", "../packages/shared-types/././**/*.ts", "./types/**/*.d.ts"] 
 }

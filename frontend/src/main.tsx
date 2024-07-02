@@ -11,5 +11,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <AllRoutes />
       <Toaster />
     </AuthProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 )
