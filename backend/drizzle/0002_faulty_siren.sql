@@ -1,0 +1,1 @@
+ALTER TABLE "app_data"."user" ADD COLUMN "refreshToken" text;

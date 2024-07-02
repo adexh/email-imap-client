@@ -1,4 +1,3 @@
-import { ImapFlow } from 'imapflow';
 import { ImapClient } from '../../infrastructure/imap';
 import { User, Email, MailBoxDetails } from 'shared-types';
 import type { ElasticService } from './elasticSearchService';
@@ -9,56 +8,6 @@ export class MailBoxService {
         private elastiService: ElasticService,
         private userService: UserService
     ) { }
-
-    async mailList(email: string): Promise<Object[] | null> {
-
-        const token = await this.userService.accessToken(email);
-
-        const client = new ImapFlow({
-            auth: {
-                user: email,
-                accessToken: token
-            },
-            logger: false,
-            host: 'outlook.office365.com',
-            port: 993,
-            tls: {
-                rejectUnauthorized: false
-            }
-        });
-        const mailList = [];
-
-        await client.connect();
-
-        let lock = await client.getMailboxLock('INBOX');
-        try {
-
-            //@ts-ignore
-            const lastval = client.mailbox.exists;
-            const range = lastval + ':' + (lastval - 10);
-
-
-
-            for await (let message of client.fetch(range, { envelope: true })) {
-                mailList.push({
-                    mailSeq: message.uid,
-                    subject: message.envelope.subject,
-                    sendersName: message.envelope.from[0].name
-                });
-            }
-        } finally {
-            // Make sure lock is released, otherwise next `getMailboxLock()` never returns
-            lock.release();
-        }
-
-        // log out and close connection
-        await client.logout();
-
-        mailList.sort((a, b) => b.mailSeq - a.mailSeq)
-        console.log("subjects : ", mailList);
-
-        return mailList;
-    }
 
     async mailBoxSync(user: User): Promise<void> {
 
@@ -128,9 +77,10 @@ export class MailBoxService {
                 subject: message.envelope.subject,
                 body: message.source.toString('utf-8'),
                 received_at: message.envelope.date,
+                sendersName: message.envelope.from[0].name?message.envelope.from[0].name:message.envelope.subject.slice(0,10)+'...',
                 attachments: [] // Add attachment handling if needed
             };
-            await this.elastiService.indexMail(email);
+            await this.elastiService.indexMail(email);  
         }
 
         lock.release();

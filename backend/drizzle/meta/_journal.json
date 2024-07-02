@@ -15,6 +15,20 @@
       "when": 1719772104882,
       "tag": "0001_quiet_mystique",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1719933794922,
+      "tag": "0002_faulty_siren",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1719947690453,
+      "tag": "0003_awesome_captain_cross",
+      "breakpoints": true
     }
   ]
 }

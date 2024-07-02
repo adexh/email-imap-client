@@ -10,13 +10,17 @@ type IAuthContext = {
   setAuthenticated: (newState: boolean) => void
   loading: boolean;
   setLoading: (newState: boolean) => void
+  isLinked: boolean;
+  setLinked: (newState: boolean) => void
 }
 
 const initialValue = {
   authenticated: false,
   setAuthenticated: () => {},
   loading: true,
-  setLoading: () => {}
+  setLoading: () => {},
+  isLinked: true,
+  setLinked: () => {}
 }
 
 const AuthContext = createContext<IAuthContext>(initialValue)
@@ -24,17 +28,20 @@ const AuthContext = createContext<IAuthContext>(initialValue)
 const AuthProvider = ({children}: Props) => {
 
   const [ authenticated, setAuthenticated ] = useState(initialValue.authenticated)
+  const [ isLinked, setLinked ] = useState(false);
   const [ loading, setLoading ] = useState(initialValue.loading);
-  const memoized = useMemo(()=> ({authenticated, setAuthenticated, loading, setLoading}), [authenticated, loading]);
+  const memoized = useMemo(()=> ({authenticated, setAuthenticated, loading, setLoading, isLinked, setLinked}), [authenticated, loading, isLinked]);
 
   useEffect(() => {
 
     const checkAuthStatus = () => {
       axios.get('http://localhost:5000/api/v1/user/session', {
         withCredentials: true
-      }).then(()=>{
+      }).then((res)=>{
+        res.data.isLinked?setLinked(true):setLinked(false);
         setAuthenticated(true);
       }).catch((err)=>{
+        setLinked(false)
         setAuthenticated(false);
         console.log(err);
       }).finally(()=>{

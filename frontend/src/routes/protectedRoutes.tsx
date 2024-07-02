@@ -3,7 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthContext } from '@/context/authContext';
 
 const ProtectedRoute: React.FC = () => {
-  const { authenticated, loading } = useContext(AuthContext);
+  const { authenticated, loading, isLinked } = useContext(AuthContext);
 
   const location = useLocation().pathname;
   console.log("Auth protected Route : ",authenticated);
@@ -16,7 +16,8 @@ const ProtectedRoute: React.FC = () => {
   
   if( authenticated && (location === '/login' || location === '/register' ) ) {
     console.log("Auth and path  ", location);
-    return <Navigate to='/' />;
+
+    return isLinked?<Navigate to='/' />:<Navigate to='/emailLink' />
   }
 
   if( !authenticated && location !== '/login' && location !== '/register' ) {

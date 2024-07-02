@@ -1,18 +1,15 @@
 import { Request, Response } from "express";
 import type { GenerateAccountLinkUrl } from "../services/generateAccountLinkUrl";
 import type { SaveAccessToken } from "../services/saveMailAccessToken";
-import type { UserService } from "../services/userService";
-import type { MailBoxService } from "../services/mailBoxService";
 import { ElasticService } from "../services/elasticSearchService";
-import mail from "../routes/emailRoutes";
+import { RefreshAccessToken } from "../services/regreshAccessToken";
 
 export class EmailclientController {
     constructor(
         private generateAccountLinkUrl: GenerateAccountLinkUrl,
         private saveAccessTokenService: SaveAccessToken,
-        private userService: UserService,
         private elasticService: ElasticService,
-        private mailBoxService: MailBoxService
+        private refreshTokenService: RefreshAccessToken
     ) { }
 
     getAccountLinkUrl = async (req: Request, res: Response) => {
@@ -38,13 +35,21 @@ export class EmailclientController {
             const linkedMail = await this.saveAccessTokenService.execute(req.body.code, email);
             req.session.user.linkedMail = linkedMail;
 
-            await this.mailBoxService.mailBoxSync(req.session.user);
-            await this.mailBoxService.emailSync(req.session.user);
-
             return res.status(200).send('Updated');
         } catch (error: any) {
             console.log(error);
             return res.status(500).send(error.message);
+        }
+    }
+
+    refreshToken = async (req: Request, res: Response) => {
+        try {
+            if( !req.session.user ){
+                return res.status(401).send('Unauthorized');
+            }
+            await this.refreshTokenService.execute(req.session.user);
+        } catch (error) {
+            return res.status(500).send('Internal Server Error');
         }
     }
 

@@ -9,58 +9,79 @@ import axios from "axios"
 import { toast } from "@/components/ui/use-toast"
 import { useLocation, useNavigate } from "react-router-dom"
 import qs from 'qs';
-import { useEffect } from "react"
+import { useContext, useEffect, useState } from "react"
+import { AuthContext } from "@/context/authContext"
 
 axios.defaults.withCredentials = true;
 
 export default function EmailLink() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setAuthenticated } = useContext(AuthContext);
   const qsData = qs.parse(location.search?.slice(1));
 
-  const isCode = !!qsData.code;
+  const [btnDisable, setBtnDisable] = useState(!!qsData.code);
 
   useEffect(() => {
-    const saveToken = ()=> {
+    const saveToken = () => {
       axios.post("http://localhost:5000/api/v1/mail/savetoken", {
         code: qsData.code
-      }).then(()=>{
+      }).then(() => {
         return navigate('/');
-      }).catch(()=>{
+      }).catch(() => {
         toast({
-          title:"Error while linking account",
+          title: "Error while linking account",
           variant: "destructive"
         })
+      }).finally(() => {
+        setBtnDisable(false);
       })
     }
 
-    if( qsData.code ) {
+    if (qsData.code) {
+      setBtnDisable(true);
       saveToken();
     }
   }, [qsData.code, navigate])
 
   const handler = () => {
-    axios.get("http://localhost:5000/api/v1/mail/genlinkurl", {withCredentials:true})
-    .then(res => {
-      window.location.href = res.data;
-    }).catch(err => {
-      toast({
-        title:"Failed to generate url",
-        description: err.message
+    axios.get("http://localhost:5000/api/v1/mail/genlinkurl", { withCredentials: true })
+      .then(res => {
+        window.location.href = res.data;
+      }).catch(err => {
+        toast({
+          title: "Failed to generate url",
+          description: err.message
+        })
       })
-    })
+  }
+
+  const handleLogout = async () => {
+    try {
+      await axios.post('http://localhost:5000/api/v1/user/logout')
+      setAuthenticated(false);
+      navigate('/login');
+    } catch (error) {
+      console.log("Some error in logout");
+    }
   }
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-gray-500">
-      <Card className="max-w-screen-md flex flex-col justify-center">
-        <CardHeader className="flex flex-row justify-center">
-          <CardTitle >Link your outlook account to continue</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-row justify-center">
-            <Button onClick={handler}  disabled={isCode}>Click here</Button>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-500">
+        <div className="flex justify-end p-5 absolute top-0 right-0">
+          <Button onClick={handleLogout} className="">Logout</Button>
+        </div>
+        <Card className="max-w-screen-md flex flex-col justify-center">
+          <CardHeader className="flex flex-row justify-center">
+            <CardTitle >Link your outlook account to continue</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-row justify-center">
+            <Button onClick={handler} disabled={btnDisable}>Click here</Button>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+
   )
 }

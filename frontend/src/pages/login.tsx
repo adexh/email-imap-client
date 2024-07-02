@@ -38,7 +38,7 @@ const FormSchema = z.object({
 
 export default function InputForm() {
   const navigate = useNavigate();
-  const { setAuthenticated, setLoading } = useContext(AuthContext);
+  const { setAuthenticated, setLoading, setLinked } = useContext(AuthContext);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -52,10 +52,17 @@ export default function InputForm() {
         'Content-Type': 'application/json'
       },
       withCredentials: true
-    }).then(() => {
+    }).then((res) => {
       setAuthenticated(true);
       setLoading(false);
-      return navigate("/", { replace: true });
+
+      if (res.data.isLinked) {
+        setLinked(true)
+      } else {
+        setLinked(false);
+        return navigate("/emailLink");
+      }
+      navigate("/", { replace: true });
     }).catch(err => { 
       setAuthenticated(false);
       toast({

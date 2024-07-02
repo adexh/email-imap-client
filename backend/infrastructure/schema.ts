@@ -14,5 +14,7 @@ export const users = mySchema.table("user", {
   image: text("image"),
   password: text('pass').notNull(),
   token: text('token'),
+  refreshToken: text('refreshToken'),
+  code: text('code'),
   linkedMail: text('linkedMail')
 })

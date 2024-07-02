@@ -17,10 +17,16 @@ const authController = new AuthController(loginService);
 const user = Router();
 
 user.post('/login', authController.login);
+user.post('/logout', authController.logout);
 user.post('/register', userController.register);
 
 user.use(authenticate);
 user.get('/session',(req, res) => {
+    console.log(req.session.user);
+    
+    if(req.session.user?.linkedMail) {
+        return res.status(200).json({isLinked:true});
+    }
     return res.status(200).send();
 })
 
