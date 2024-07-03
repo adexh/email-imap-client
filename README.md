@@ -17,6 +17,7 @@ This project is a monorepo for an Email IMAP Client that fetches emails and load
 - [npm](https://www.npmjs.com/) (v6 or later)
 - [Docker](https://www.docker.com/) (v20 or later)
 - [Docker Compose](https://docs.docker.com/compose/) (v1.27 or later)
+- [Azure Portal Registered App](https://learn.microsoft.com/en-us/graph/auth-register-app-v2#register-an-application)
 
 ## Installation
 
@@ -36,9 +37,12 @@ npm install --prefix packages/shared-types
 npm install --prefix frontend
 ```
 
-## Environment Variables
+## Docker Setup
+
+### Environment Variables
 
 Create a `.env` file in the root directory and configure the following environment variables:
+This file is for docker-compose
 
 ```
 POSTGRES_USER=your_postgres_user
@@ -47,19 +51,50 @@ POSTGRES_DB=your_database
 POSTGRES_PORT=5432
 
 REDIS_PASSWORD=your_redis_password
+
+ELASTIC_USER=your_elastic_user
+ELASTIC_PASS=your_elastic_Pass
 ```
 
-## Docker Setup
-
-Ensure Docker is running on your machine. Then, run the following command to start the services:
+### Ensure Docker is running on your machine. Then, run the following command to start the services:
 
 ```bash
 docker-compose up -d
 ```
 
-### `docker-compose.yml`
+### Elastic Search script
+Run the script from script folder in the root `elasticIndex.sh` to add the indices
 
 ## Running the Project
+
+### Environment Variables backend
+
+Create a `.env` file in the `./backend` directory and configure the following environment variables:
+
+```
+AUTH_SECRET=some_secret_text
+
+POSTGRES_USER= dbuser
+POSTGRES_PASSWORD= dbpass
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB= emaildb
+
+REDIS_PASSWORD= redispass
+
+ELASTIC_NODE= http://localhost:9200
+ELASTIC_USER= elastic
+ELASTIC_PASS= elasticPass
+
+CLIENT_ID=your_app_client_id
+REDIRECT_URI=http://localhost:5173/emailLink (This must be same from the app registration)
+CLIENT_SECRET=your_secret
+```
+
+Create a `.env` file in the `./frontend` directory and configure the following environment variables:
+```
+VITE_API_BASE_URL=http://localhost:5000/api/v1
+```
 
 To run the backend:
 
