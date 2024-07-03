@@ -5,14 +5,12 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import axios from "axios"
+import axiosInstance from "@/lib/axios"
 import { toast } from "@/components/ui/use-toast"
 import { useLocation, useNavigate } from "react-router-dom"
 import qs from 'qs';
 import { useContext, useEffect, useState } from "react"
 import { AuthContext } from "@/context/authContext"
-
-axios.defaults.withCredentials = true;
 
 export default function EmailLink() {
   const navigate = useNavigate();
@@ -24,7 +22,7 @@ export default function EmailLink() {
 
   useEffect(() => {
     const saveToken = () => {
-      axios.post("http://localhost:5000/api/v1/mail/savetoken", {
+      axiosInstance.post("/mail/savetoken", {
         code: qsData.code
       }).then(() => {
         return navigate('/');
@@ -45,7 +43,7 @@ export default function EmailLink() {
   }, [qsData.code, navigate])
 
   const handler = () => {
-    axios.get("http://localhost:5000/api/v1/mail/genlinkurl", { withCredentials: true })
+    axiosInstance.get("/mail/genlinkurl", { withCredentials: true })
       .then(res => {
         window.location.href = res.data;
       }).catch(err => {
@@ -58,7 +56,7 @@ export default function EmailLink() {
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:5000/api/v1/user/logout')
+      await axiosInstance.post('/user/logout')
       setAuthenticated(false);
       navigate('/login');
     } catch (error) {

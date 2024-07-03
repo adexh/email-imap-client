@@ -1,9 +1,11 @@
 import { ImapFlow } from 'imapflow';
+import logger from '../utils/logger';
 
 export class ImapClient {
     private client: ImapFlow;
 
     constructor(email: string, token: string) {
+        logger.debug('Imap constructor called')
         this.client = new ImapFlow({
             auth: {
                 user: email,

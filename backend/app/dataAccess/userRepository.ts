@@ -9,7 +9,7 @@ export class UserRepository {
   }
 
   public async findByEmail(email: string): Promise<any | null> {
-    const [userFromDb] = await db.select({ id:users.id, email:users.email, password:users.password, name:users.name, linkedMail: users.linkedMail}).from(users).where(eq(users.email, email));
+    const [userFromDb] = await db.select({ id:users.id, email:users.email, password:users.password, name:users.name, linkedMail: users.linkedMail, token: users.token}).from(users).where(eq(users.email, email));
     return userFromDb ? userFromDb : null;
   }
 

@@ -15,11 +15,13 @@ export type Email = {
     user_email: string,
     email_id: string;
     email_uid: number,
+    sendersName: string,
     from: string;
     to: string;
     subject: string;
     body: string;
     received_at: Date;
+    seen:boolean,
     attachments?: Array<{
         file_name: string;
         file_size: number;

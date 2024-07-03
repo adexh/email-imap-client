@@ -1,5 +1,6 @@
 import esClient from '../../infrastructure/elasticSearch';
-import { User, MailBoxDetails, Email } from 'packages/shared-types';
+import { User, MailBoxDetails, Email } from 'shared-types';
+import logger from '../../utils/logger';
 
 export class ElasticService {
     
@@ -15,11 +16,12 @@ export class ElasticService {
         }
     }
 
-    async indexMail (mail : Email) {
+    async indexMail (mail : Email, docId: string) {
         try {
             await esClient.index({
                 index: 'user_emails',
-                body: mail
+                id: docId,
+                document: mail,
             })
         } catch (error) {
             throw new Error(`Error indexing email for : ${mail.email_uid}`);
@@ -50,7 +52,7 @@ export class ElasticService {
                 return [];
             }
         } catch (error) {
-            console.log(error);
+            logger.error(error);
             throw new Error('Error while fetching email from ES');
         }
     }

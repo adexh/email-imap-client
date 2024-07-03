@@ -9,6 +9,8 @@ import session from "express-session";
 import { User } from "shared-types";
 import RedisStore from "connect-redis"
 import {redisClient} from "./infrastructure/redis";
+import expressWinston from 'express-winston';
+import logger from './utils/logger';
 
 redisClient.connect().then(data=> console.log('Redis connect success')
 ).catch(console.error)
@@ -28,7 +30,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(morgan('dev'));
+app.use(expressWinston.logger({
+  winstonInstance: logger,
+  meta: true,
+  msg: "HTTP {{req.method}} {{req.url}}",
+  expressFormat: true,
+  colorize: false,
+}));
+
 app.use(helmet());
 app.use(cors({
   origin: "http://localhost:5173",

@@ -20,6 +20,7 @@
     "@types/express-session": "^1.18.0",
     "@types/imap": "^0.8.40",
     "@types/imapflow": "^1.0.18",
+    "@types/winston": "^2.4.4",
     "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "connect-redis": "^7.1.1",
@@ -27,6 +28,7 @@
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.31.2",
     "express-session": "^1.18.0",
+    "express-winston": "^4.2.0",
     "helmet": "^7.1.0",
     "imap": "^0.8.19",
     "imapflow": "^1.0.162",
@@ -34,7 +36,8 @@
     "pg": "^8.12.0",
     "qs": "^6.12.1",
     "redis": "^4.6.14",
-    "shared-types": "file:../packages/shared-types/dist"
+    "shared-types": "file:../packages/shared-types/dist",
+    "winston": "^3.13.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

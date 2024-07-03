@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { LoginService } from "../services/authService";
-import { redisClient } from "../../infrastructure/redis";
+import logger from '../../utils/logger';
 
 export class AuthController {
     constructor(private loginService : LoginService) { }
@@ -15,9 +15,9 @@ export class AuthController {
                     email: user.email,
                     linkedMail: user.linkedMail
                 }
-                console.log(user);
+                logger.debug(user);
                 
-                if( user.linkedMail ) {
+                if( user.linkedMail && user.token ) {
                     return res.status(200).json({isLinked: true});
                 }
                 return res.status(200).send("sucess");
@@ -25,7 +25,7 @@ export class AuthController {
                 return res.status(401).send("Unauthorized");
             }
         } catch (error) {
-            console.log(error);
+            logger.error(error);
             return res.status(500).send("Internal Server error");
         }
     };
@@ -34,14 +34,14 @@ export class AuthController {
         try {
             req.session.destroy( async (err) => {
                 if (err) {
-                    console.log("error in logout ",err);
+                    logger.error("error in logout ",err);
                     return res.status(500).send('Failed to logout');
                 }
                 res.clearCookie('session-id');
                 res.send('Logged out');
               });
         } catch (error) {
-            console.log(error);
+            logger.error(error);
             throw new Error('Error in logout');
         }
     }

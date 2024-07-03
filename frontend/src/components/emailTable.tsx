@@ -4,7 +4,6 @@ import * as React from "react"
 import {
   CaretSortIcon,
   ChevronDownIcon,
-  DotsHorizontalIcon,
 } from "@radix-ui/react-icons"
 import {
   ColumnDef,
@@ -25,9 +24,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
@@ -120,13 +116,17 @@ export const columns: ColumnDef<mail>[] = [
     accessorKey: "received_at",
     header: () => <div className="text-right">Date</div>,
     cell: ({ row }) => {
-      const date = row.getValue("received_at")
-      return <div className="text-right font-medium">{ formatDate(date)}</div>
+      const date = row.getValue("received_at") as string
+      return <div className="text-right">{ formatDate(date)}</div>
     }
   }
 ]
 
-export function EmailTable({mailList} : {mailList: mail[]}) {
+type EmailTableProps = {
+  mailList:mail[];
+}
+
+export function EmailTable({ mailList }: EmailTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []

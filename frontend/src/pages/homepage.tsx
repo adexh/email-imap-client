@@ -5,30 +5,33 @@ import { EmailTable } from "@/components/emailTable";
 import { Button } from "@/components/ui/button";
 import { AuthContext } from "@/context/authContext";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "@/lib/axios";
 
 export default function Home() {
   const { setAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const fetchEmails = async () => {
+    const res = await axiosInstance.post('/mail/getEmails', {});
+    if( res.status === 200 ) {
+      setMailList(res.data);
+    } else {
+      toast({
+        title: "Issue in fetching emails",
+        variant: "destructive"
+      })
+    }
+  }
+
   const [mailList, setMailList] = useState([]);
 
     useEffect(()=> {
-        axios.get('http://localhost:5000/api/v1/mail/getEmails')
-        .then( res => {
-            setMailList(res.data);
-        })
-        .catch( err => {
-            toast({
-                title: "Issue in fetching emails",
-                description: err.message,
-                variant: "destructive"
-            })
-        } )
+      fetchEmails();
     }, [])
 
     const handleLogout = async() => {
       try {
-        await axios.post('http://localhost:5000/api/v1/user/logout')
+        await axiosInstance.post('/user/logout')
         setAuthenticated(false);
         navigate('/login');
       } catch (error) {

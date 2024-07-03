@@ -22,8 +22,6 @@ user.post('/register', userController.register);
 
 user.use(authenticate);
 user.get('/session',(req, res) => {
-    console.log(req.session.user);
-    
     if(req.session.user?.linkedMail) {
         return res.status(200).json({isLinked:true});
     }

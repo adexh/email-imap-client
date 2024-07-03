@@ -2,6 +2,7 @@ import axios from 'axios';
 import qs from 'qs';
 import { UserRepository } from '../dataAccess/userRepository';
 import { User } from 'shared-types';
+import logger from '../../utils/logger';
 
 export class RefreshAccessToken {
   constructor(private userRepository: UserRepository) {}
@@ -30,7 +31,8 @@ export class RefreshAccessToken {
       }
     });
 
-    const { access_token, refresh_token } = resp.data.access_token;
+    const { access_token, refresh_token } = resp.data;
+    logger.debug("Got refresh tokens");
 
     await this.userRepository.updateUserToken(user.email, user.linkedMail, access_token, refresh_token);
   }

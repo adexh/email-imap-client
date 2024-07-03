@@ -14,9 +14,14 @@ axiosInstance.interceptors.response.use(
   async error => {
     const originalRequest = error.config;
 
+    console.log("intercepted error");
+    
+    console.log(originalRequest.url);
+    
+
     if (error.response?.status === 401 &&
         !originalRequest._retry &&
-        originalRequest.url.startsWith('/api/v1/email')
+        originalRequest.url.startsWith('/mail/')
     ) {
       originalRequest._retry = true;
 

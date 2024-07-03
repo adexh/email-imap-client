@@ -6,12 +6,16 @@ import { SaveAccessToken } from '../services/saveMailAccessToken';
 import { UserRepository } from '../dataAccess/userRepository';
 import { ElasticService } from '../services/elasticSearchService';
 import { RefreshAccessToken } from '../services/regreshAccessToken';
+import { MailBoxService } from '../services/mailBoxService';
+import { UserService } from '../services/userService';
 
 const generateAccountLinkUrlService = new GenerateAccountLinkUrl();
 
 const userRepository = new UserRepository();
 
 const elasticService = new ElasticService();
+const userService = new UserService(userRepository);
+const mailBoxService = new MailBoxService(elasticService, userService);
 const refreshTokenService = new RefreshAccessToken(userRepository);
 const saveAccessTokenService = new SaveAccessToken(userRepository);
 
@@ -19,7 +23,8 @@ const emailclientController = new EmailclientController(
                                     generateAccountLinkUrlService,
                                     saveAccessTokenService,
                                     elasticService,
-                                    refreshTokenService
+                                    refreshTokenService,
+                                    mailBoxService
                                     );
 
 const mail = Router();
@@ -30,7 +35,7 @@ mail.get('/genlinkurl', emailclientController.getAccountLinkUrl );
 
 mail.post('/savetoken', emailclientController.saveAccessToken)
 
-mail.get('/getEmails', emailclientController.getInbox);
+mail.post('/getEmails', emailclientController.getInbox);
 
 mail.get('/refreshToken', emailclientController.refreshToken);
 
