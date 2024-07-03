@@ -1,19 +1,18 @@
 import { Request, Response } from "express";
 import type { GenerateAccountLinkUrl } from "../services/generateAccountLinkUrl";
-import type { SaveAccessToken } from "../services/saveMailAccessToken";
 import { ElasticService } from "../services/elasticSearchService";
-import { RefreshAccessToken } from "../services/regreshAccessToken";
 import { MailBoxService } from "../services/mailBoxService";
 import logger from '../../utils/logger';
+import { AccessTokenService } from "../services/accessTokenService";
+
 
 
 export class EmailclientController {
     constructor(
         private generateAccountLinkUrl: GenerateAccountLinkUrl,
-        private saveAccessTokenService: SaveAccessToken,
         private elasticService: ElasticService,
-        private refreshTokenService: RefreshAccessToken,
-        private mailBoxService: MailBoxService
+        private mailBoxService: MailBoxService,
+        private accessTokenService: AccessTokenService
     ) { }
 
     getAccountLinkUrl = async (req: Request, res: Response) => {
@@ -36,7 +35,7 @@ export class EmailclientController {
         const email = req.session.user.email;
 
         try {
-            const linkedMail = await this.saveAccessTokenService.execute(req.body.code, email);
+            const linkedMail = await this.accessTokenService.saveToken(req.body.code, email);
             req.session.user.linkedMail = linkedMail;
 
             return res.status(200).send('Updated');
@@ -52,7 +51,7 @@ export class EmailclientController {
                 return res.status(401).send('Unauthorized');
             }
             logger.info("Refresh token called");
-            await this.refreshTokenService.execute(req.session.user);
+            await this.accessTokenService.refreshToken(req.session.user);
             return res.status(200).send('Refresh');
         } catch (error) {
             return res.status(500).send('Internal Server Error');
@@ -70,7 +69,6 @@ export class EmailclientController {
                   
             return res.status(200).json(mails);
         } catch (error:any) {
-            logger.error(error);
             return res.status(401).send("AUTHENTICATE FAILED");
         }
     }

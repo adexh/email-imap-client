@@ -35,4 +35,8 @@ export class UserRepository {
       code: result.code
     }
   }
+
+  public async removeToken(email:string): Promise<void> {
+    await db.update(users).set({token: null}).where(eq(users.email, email));
+  }
 }

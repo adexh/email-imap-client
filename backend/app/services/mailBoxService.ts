@@ -3,11 +3,13 @@ import { User, Email, MailBoxDetails } from 'shared-types';
 import type { ElasticService } from './elasticSearchService';
 import { UserService } from './userService';
 import logger from '../../utils/logger';
+import { AccessTokenService } from './accessTokenService';
 
 export class MailBoxService {
     constructor(
         private elastiService: ElasticService,
-        private userService: UserService
+        private userService: UserService,
+        private accessTokenService: AccessTokenService
     ) { }
 
     async mailBoxSync(user: User): Promise<void> {
@@ -47,7 +49,7 @@ export class MailBoxService {
         await this.elastiService.indexMailBox(mailboxDetails);
     }
 
-    async emailSync(user: User): Promise<void> {
+    async emailSync(user: User, retry = 0): Promise<void> {
         if (!user.linkedMail) {
             throw new Error('No linked mail for user present');
         }
@@ -94,8 +96,13 @@ export class MailBoxService {
             logger.info("Email Sync done");
         } catch (error) {
             logger.error(error);
-            throw new Error('AUTH');
-        }
 
+            await this.accessTokenService.refreshToken(user);
+            if( retry < 1 ) {
+                await this.emailSync(user, retry + 1);
+            } else {
+                await this.accessTokenService.removeToken(user.email);
+            }
+        }
     }
 }
