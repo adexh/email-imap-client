@@ -28,6 +28,25 @@ export class ElasticService {
         }
     }
 
+    async deleteMail (user_email: string, docId: string) {
+        try {
+            const result = await esClient.deleteByQuery({
+                index: 'user_emails',
+                body: {
+                    query: {
+                        match: {
+                            id: docId
+                        }
+                    }
+                }
+            });
+            console.log('Record deleted:', result);
+        } catch (error) {
+            logger.error('Unable to delete the email');
+            logger.error(error);
+        }
+    }
+
     async getEmails(user: User, offset: number, limit: number): Promise<any> {
         try {
             const body = await esClient.search({
@@ -47,7 +66,16 @@ export class ElasticService {
             });
 
             if( body.hits.hits?.length > 0 ) {
-                return body.hits.hits.map(hit => hit._source);
+                const emails = body.hits.hits.map((hit: any) => ({
+                    id: hit._source.email_uid,  // Map email_uid to id
+                    received_at: hit._source.received_at,
+                    sendersName: hit._source.sendersName,
+                    from: hit._source.from,
+                    subject: hit._source.subject,
+                    seen: hit._source.seen
+                  }));
+
+                return emails;
             } else {
                 return [];
             }
@@ -56,4 +84,5 @@ export class ElasticService {
             throw new Error('Error while fetching email from ES');
         }
     }
+
 }

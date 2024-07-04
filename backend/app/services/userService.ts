@@ -40,8 +40,10 @@ export class UserService {
         const token = await this.userRepository.getAccessToken(email);
         if( token )
             return token;
-        else
+        else {
+            console.log("token : ", token);
             throw new Error('Issue in getting access token');
+        }
     }
 
 }

@@ -4,7 +4,8 @@ import { ElasticService } from "../services/elasticSearchService";
 import { MailBoxService } from "../services/mailBoxService";
 import logger from '../../utils/logger';
 import { AccessTokenService } from "../services/accessTokenService";
-
+import { ImapClient } from "../../infrastructure/imap";
+import { PollClients } from "../dataAccess/pollingClients";
 
 
 export class EmailclientController {
@@ -12,7 +13,9 @@ export class EmailclientController {
         private generateAccountLinkUrl: GenerateAccountLinkUrl,
         private elasticService: ElasticService,
         private mailBoxService: MailBoxService,
-        private accessTokenService: AccessTokenService
+        private accessTokenService: AccessTokenService,
+        private imap: ImapClient,
+        private pollClients: PollClients
     ) { }
 
     getAccountLinkUrl = async (req: Request, res: Response) => {
@@ -37,6 +40,8 @@ export class EmailclientController {
         try {
             const linkedMail = await this.accessTokenService.saveToken(req.body.code, email);
             req.session.user.linkedMail = linkedMail;
+
+            this.mailBoxService.startIdle(req.session.user); // Asynchronously start the mail sync service
 
             return res.status(200).send('Updated');
         } catch (error: any) {
@@ -63,13 +68,39 @@ export class EmailclientController {
             if( !req.session.user?.linkedMail ) {
                 return res.status(401).send('Unauthorised');
             }
-            this.mailBoxService.emailSync(req.session.user); // Asynchronously sync the emails
-            const mails = await this.elasticService.getEmails(req.session.user, 0, 10);
+
+            const started = await this.mailBoxService.isIdleStarted();
+            if( !started ) {
+                logger.debug('Started Idle')
+                this.mailBoxService.startIdle(req.session.user); // Asynchronously start the mail sync service if not running
+            }
+            const {pageIndex, pageSize} = req.body;
+            this.mailBoxService.emailSync(req.session.user, pageIndex*pageSize);
+
+            const mails = await this.elasticService.getEmails(req.session.user, pageIndex*pageSize, pageSize);
             console.log("Mails count : ",mails.length);
                   
             return res.status(200).json(mails);
         } catch (error:any) {
+            logger.error(error);
             return res.status(401).send("AUTHENTICATE FAILED");
         }
+    }
+
+    poll = async (req: Request, res: Response) => {
+        res.setHeader('Cache-Control', 'no-store');
+        this.pollClients.pushClient(res);
+
+        const id = setTimeout(() => {
+            this.pollClients.sendResponseToClients('RENEW');
+        }, 2000);
+
+        req.on('close', () => {
+            console.log('Client disconnected');
+            this.pollClients.removeClient(res); // Ensure you have a method to remove the client
+            logger.debug(this.pollClients.getCount() + " : clients");
+            clearTimeout(id);
+            return
+        });
     }
 }

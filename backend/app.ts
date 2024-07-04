@@ -1,5 +1,4 @@
 import express from 'express';
-import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -48,7 +47,7 @@ app.use(express.json());
 
 app.use(session({
   store: redisStore,
-  secret: process.env.AUTH_SECRET as string,
+  secret: process.env.AUTH_SECRET,
   saveUninitialized: false,
   resave: false,
   name: 'cwns3r8',

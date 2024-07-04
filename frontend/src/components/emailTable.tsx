@@ -35,110 +35,171 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { toast } from "@/components/ui/use-toast";
 
-let data: mail[] = []
+import { useEffect, useState, useMemo } from "react"
+import axiosInstance from "@/lib/axios";
 
-export type mail = {
+type mail = {
   id: string
   received_at: string
   sendersName: string
   from:string
   subject: string
+  seen?:boolean
 }
 
-export const columns: ColumnDef<mail>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "sendersName",
-    header: "Sender",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("sendersName")}</div>
-    ),
-  },
-  {
-    accessorKey: "from",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          From
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      )
+export function EmailTable() {
+  const columns: ColumnDef<mail>[] = useMemo(()=> [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
     },
-    cell: ({ row }) =>
-      <div className="lowercase">
-        {row.getValue("from")}
-      </div>,
-  },
-  {
-    accessorKey: "subject",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Subject
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      )
+    {
+      accessorKey: "sendersName",
+      header: "Sender",
+      cell: ({ row }) => (
+        <div className="capitalize">{row.getValue("sendersName")}</div>
+      ),
     },
-    cell: ({ row }) =>
-      <div className="font-bold">
-        {row.getValue("subject")}
-      </div>,
-  },
-  {
-    accessorKey: "received_at",
-    header: () => <div className="text-right">Date</div>,
-    cell: ({ row }) => {
-      const date = row.getValue("received_at") as string
-      return <div className="text-right">{ formatDate(date)}</div>
+    {
+      accessorKey: "from",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            From
+            <CaretSortIcon className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
+      cell: ({ row }) =>
+        <div className="lowercase">
+          {row.getValue("from")}
+        </div>,
+    },
+    {
+      accessorKey: "subject",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Subject
+            <CaretSortIcon className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
+      cell: ({ row }) =>{
+        return (
+          <div>
+            {row.getValue("subject")}
+          </div>
+        )
+      }
+  ,
+    },
+    {
+      accessorKey: "received_at",
+      header: () => <div className="text-right">Date</div>,
+      cell: ({ row }) => {
+        const date = row.getValue("received_at") as string
+        return <div className="text-right">{ formatDate(date)}</div>
+      }
+    }
+  ], [])
+
+
+  const [pagination, setPagination] = useState({
+    pageIndex: 0, // page index matlab = page number
+    pageSize: 5, // page size matlab = limit
+  });
+  const [mailList, setMailList] = useState<mail[]>([]);
+
+  const fetchEmails = async () => {
+    const res = await axiosInstance.post('/mail/getEmails', {
+      pageIndex: pagination.pageIndex,
+      pageSize: pagination.pageSize
+    });
+    if( res.status === 200 ) {
+      const data = res.data;
+
+      setMailList(data);
+    } else {
+      toast({
+        title: "Issue in fetching emails",
+        variant: "destructive"
+      })
     }
   }
-]
 
-type EmailTableProps = {
-  mailList:mail[];
-}
 
-export function EmailTable({ mailList }: EmailTableProps) {
+  const pollEmails = async () => {
+    try {
+      const resp = await axiosInstance.get('/mail/poll');
+      if ( resp.status != 200 ) {
+        throw new Error('Network response was not ok');
+      }
+
+      if (resp.data === 'UPDATE') {
+        await fetchEmails();
+      }
+
+      // Always restart the polling unless condition 'RENEW' is met
+      console.log(resp.data, );
+      pollEmails();
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+    useEffect(()=> {
+      pollEmails();
+      return () => {
+      };
+    },[])
+
+    useEffect(()=>{
+      fetchEmails();
+    }, [pagination])
+
+
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
-  data = mailList;
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
   const table = useReactTable({
-    data,
+    data: mailList,
     columns,
+    manualPagination: true,
+    pageCount: 100,
+    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -152,7 +213,8 @@ export function EmailTable({ mailList }: EmailTableProps) {
       columnFilters,
       columnVisibility,
       rowSelection,
-    },
+      pagination,
+    }
   })
 
   return (
@@ -221,8 +283,7 @@ export function EmailTable({ mailList }: EmailTableProps) {
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-
+                    <TableCell key={cell.id} className={row.original.seen?'':'font-bold'}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

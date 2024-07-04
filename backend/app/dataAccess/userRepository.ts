@@ -23,7 +23,6 @@ export class UserRepository {
 
   public async getAccessToken(email: string): Promise<string | null> {
     const [result] = await db.select({token: users.token}).from(users).where(eq(users.email, email));
-
     return result.token;
   }
 

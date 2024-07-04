@@ -1,6 +1,4 @@
-import { toast } from "@/components/ui/use-toast";
-import axios from "axios"
-import { useContext, useEffect, useState } from "react"
+import { useContext } from "react"
 import { EmailTable } from "@/components/emailTable";
 import { Button } from "@/components/ui/button";
 import { AuthContext } from "@/context/authContext";
@@ -8,26 +6,9 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/lib/axios";
 
 export default function Home() {
+
   const { setAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
-
-  const fetchEmails = async () => {
-    const res = await axiosInstance.post('/mail/getEmails', {});
-    if( res.status === 200 ) {
-      setMailList(res.data);
-    } else {
-      toast({
-        title: "Issue in fetching emails",
-        variant: "destructive"
-      })
-    }
-  }
-
-  const [mailList, setMailList] = useState([]);
-
-    useEffect(()=> {
-      fetchEmails();
-    }, [])
 
     const handleLogout = async() => {
       try {
@@ -46,7 +27,7 @@ export default function Home() {
       </div>
       <div className="px-16 text-2xl">Your Emails</div>
       <div className="px-16">
-        <EmailTable mailList={mailList}/>
+        <EmailTable />
       </div>
     </div>
   )
