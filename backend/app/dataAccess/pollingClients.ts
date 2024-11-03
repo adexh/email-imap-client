@@ -1,9 +1,10 @@
 import logger from "../../utils/logger";
+import { type Response } from "express";
 
 export class PollClients {
-    constructor(private clients = []) { }
+    constructor(private clients: Response[] = []) { }
 
-    pushClient = (res: any) => {
+    pushClient = (res: Response) => {
         this.clients.push(res);
     }
 

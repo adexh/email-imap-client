@@ -47,7 +47,7 @@ app.use(express.json());
 
 app.use(session({
   store: redisStore,
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET as string,
   saveUninitialized: false,
   resave: false,
   name: 'cwns3r8',

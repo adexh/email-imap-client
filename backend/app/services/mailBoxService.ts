@@ -29,6 +29,8 @@ export class MailBoxService {
         await this.imap.connect(user.linkedMail, token);
 
         const imapClient = this.imap.getClient();
+        if( !imapClient )
+            throw new Error('No imap client found');
 
         const lock = await imapClient.getMailboxLock('INBOX');
 
@@ -67,13 +69,18 @@ export class MailBoxService {
                 await this.imap.connectSync(user.linkedMail, token);
             }
             const imapClient = this.imap.getSyncClient();
+            if( !imapClient )
+                throw new Error('No imap client found');
 
             logger.debug('connected to client');
 
             const lock = await this.imap.getMailboxLockSync('INBOX');
 
             const status = await imapClient.status('INBOX', {messages: true, highestModseq: true});
-            const range = (status.messages-offset-20)+':'+(status.messages-offset)
+            if(!status || !status.messages)
+                throw new Error('No status found');
+
+            const range = (status.messages - offset-20)+':'+(status.messages-offset)
             logger.debug(range);
 
             const sinceDate = new Date();
@@ -121,11 +128,17 @@ export class MailBoxService {
         try {
             const token = await this.userService.accessToken(user.email);
 
+            if( !user.linkedMail ) {
+                throw new Error('No linked mail for user present');
+            }
+
             await this.imap.connect(user.linkedMail, token);
             logger.debug('got connection');
 
             const client = this.imap.getClient();
-
+            if( !client )
+                throw new Error('No imap client found');
+            
             await client.mailboxOpen('INBOX');
 
             client.idle();
@@ -137,7 +150,7 @@ export class MailBoxService {
                 client.on(event, (data) => {
                     logger.debug(`Got new message: ${JSON.stringify(data)} `);
                     
-                    let query = {};
+                    let query: Record<string, any> = {};
 
                     if ( !data.vanished || data.vanished ) {
                         query["deleted"] = true;
@@ -155,6 +168,9 @@ export class MailBoxService {
                     )) {
                         
                         logger.debug(event);
+                        if( !user.linkedMail )
+                            throw new Error('No linked mail for user present');
+
                         if( event == 'expunge' ) {
                             const docId = `${user.linkedMail}${message.uid}`
                             logger.debug(docId);
@@ -185,13 +201,12 @@ export class MailBoxService {
     
                 });
             });
-    
-
 
             logger.debug('event attached');
         } catch (err) {
             logger.error('IMAP connection error:', err);
             console.log(err);
+            //@ts-expect-error
             if( err.authenticationFailed ) {
                 await this.accessTokenService.refreshToken(user);
             }

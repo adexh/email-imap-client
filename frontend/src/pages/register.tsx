@@ -23,9 +23,6 @@ import {
 
 import axios from "axios"
 
-// import { userSchema } from "shared-types"
-
-// const FormSchema = userSchema;
 const FormSchema = z.object({
   name: z.string(),
   password: z.string().min(6, 'Must be min 6 characters').max(50)

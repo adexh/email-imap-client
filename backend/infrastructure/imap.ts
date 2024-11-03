@@ -2,11 +2,11 @@ import { ImapFlow, MailboxLockObject } from 'imapflow';
 import logger from '../utils/logger';
 
 export class ImapClient {
-    private client:ImapFlow = null;
-    private syncClient:ImapFlow = null;
+    private client:ImapFlow | null = null;
+    private syncClient:ImapFlow | null = null;
     private isConnected:boolean = false;
     isSyncConnected:boolean = false;
-    private mailBoxLock:MailboxLockObject = null;
+    private mailBoxLock:MailboxLockObject | null = null;
 
     constructor() {
         logger.debug('Imap constructor called')
@@ -79,20 +79,31 @@ export class ImapClient {
 
     async disconnect() {
         this.isConnected = false;
+        if( !this.client ) return; 
         await this.client.logout();
     }
 
     async getMailboxLock(mailbox: string) {
+        if( !this.client )
+            throw new Error('Client not connected');
         this.mailBoxLock = await this.client.getMailboxLock(mailbox);
         return this.mailBoxLock;
     }
 
     async getMailboxLockSync(mailbox: string) {
+        if( !this.syncClient )
+            throw new Error('Client not connected');
+
         this.mailBoxLock = await this.syncClient.getMailboxLock(mailbox);
         return this.mailBoxLock;
     }
 
     async lockReleast() {
+        if( !this.mailBoxLock )
+            throw new Error('Mailbox lock not set');
+        if( !this.client )
+            throw new Error('Client not connected');
+
         this.mailBoxLock.release();
     }
 }
