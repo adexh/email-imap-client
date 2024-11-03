@@ -6,6 +6,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "email-imap-client": "file:../..",
     "zod": "^3.23.8"
   },
   "devDependencies": {

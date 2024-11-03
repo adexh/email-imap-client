@@ -27,6 +27,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.31.2",
+    "email-imap-client": "file:..",
     "express-session": "^1.18.0",
     "express-winston": "^4.2.0",
     "helmet": "^7.1.0",

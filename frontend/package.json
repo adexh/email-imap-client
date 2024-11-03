@@ -24,6 +24,7 @@
     "axios": "^1.7.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "email-imap-client": "file:..",
     "lucide-react": "^0.399.0",
     "qs": "^6.12.1",
     "react": "^18.3.1",
